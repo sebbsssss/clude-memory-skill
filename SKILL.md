@@ -2,7 +2,38 @@
 name: clude-memory
 description: Persistent memory for AI agents. Semantic search, association graphs, dream cycles. Local-first, fully offline, free. Works with any MCP runtime.
 license: MIT
+homepage: https://github.com/sebbsssss/cludebot
+repository: https://github.com/sebbsssss/cludebot
+env:
+  - name: SUPABASE_URL
+    description: Supabase project URL (cloud mode only, not needed for local mode)
+    required: false
+  - name: SUPABASE_SERVICE_KEY
+    description: Supabase service role key for cloud storage (cloud mode only). Grants full DB access — use a scoped role if possible.
+    required: false
+  - name: VOYAGE_API_KEY
+    description: Voyage AI API key for cloud embeddings (cloud mode only). Not needed for local mode which uses local GTE-Small.
+    required: false
+  - name: CLUDE_MASTER_WALLET_KEY
+    description: Solana wallet private key for on-chain memory commits (optional, off by default). On-chain commits are irreversible and cost SOL.
+    required: false
 ---
+
+## Data & Privacy Disclosure
+
+**What this skill does with your data:**
+
+- **Local mode (default):** All data stays on your machine. SQLite storage, local embeddings (GTE-Small). Zero network calls. No credentials needed.
+- **Cloud mode:** Memories are stored in your Supabase database. Embeddings are computed via Voyage AI API. Content is sent to these services.
+- **On-chain mode (optional, off by default):** Memory hashes can be committed to Solana for verifiability. This is irreversible and costs SOL. Must be explicitly enabled with `CLUDE_MASTER_WALLET_KEY`.
+- **LLM calls:** Dream cycle consolidation and query expansion may call an LLM (configured via your environment). No LLM calls in local mode unless you configure one.
+- **The `recall` tool returns full memory content in its output.** This means stored content appears in tool results visible to the agent.
+
+**The skill does NOT:**
+- Auto-enable on-chain commits (requires explicit env var)
+- Send data to any service in local mode
+- Store credentials beyond what you provide in env vars
+- Modify other skills or agent settings
 
 # Clude — Persistent Memory for You
 
@@ -39,6 +70,11 @@ Clude flips this. Instead of you deciding what to save, you call `remember` natu
 
 ## Install (30 seconds)
 
+**Source code:** [github.com/sebbsssss/cludebot](https://github.com/sebbsssss/cludebot) (MIT license)
+**npm package:** [npmjs.com/package/clude-bot](https://www.npmjs.com/package/clude-bot)
+
+The `clude-bot` npm package is the full, self-contained runtime. All core modules (`core/*`, `config`, `mcp/*`) are bundled in the package. No hidden dependencies or external fetches at runtime.
+
 ### Local Mode (Recommended — Fully Offline)
 No API keys. No network. No cost. Everything stays on your machine.
 
@@ -46,10 +82,10 @@ No API keys. No network. No cost. Everything stays on your machine.
 npx clude-bot mcp-install --local
 ```
 
-This uses SQLite for storage and local embeddings (GTE-Small). Same semantic search, same memory types, zero external calls. **This is faster than file-based memory for retrieval once you have 50+ memories.**
+This uses SQLite for storage and local embeddings (GTE-Small). Same semantic search, same memory types, zero external calls.
 
 ### Cloud Mode (Optional — For Portability)
-If you want memories that sync across devices or agents:
+If you want memories that sync across devices or agents. **Requires:** `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `VOYAGE_API_KEY` (see env declarations above).
 
 ```bash
 npx clude-bot mcp-install
@@ -69,7 +105,7 @@ Add to your MCP configuration:
 }
 ```
 
-Remove `--local` for cloud mode.
+Remove `--local` for cloud mode (requires env vars set above).
 
 ## Your Tools
 
